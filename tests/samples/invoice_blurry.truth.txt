@@ -1,0 +1,17 @@
+SHREE GANESH TRADERS
+12, MG Road, Bengaluru 560001
+Phone: +91 98450 12345
+GSTIN: 29ABCDE1234F1Z5
+TAX INVOICE
+Invoice No: INV-1001
+Date: 06/10/2026
+Customer: ABC Stores
+Item Qty Amount
+Milk 1L 2 ₹50.00
+Bread 1 ₹40.00
+Basmati Rice 5kg 1 ₹500.00
+Subtotal ₹590.00
+CGST 2.5% ₹14.75
+SGST 2.5% ₹14.75
+Total ₹619.50
+Thank you for your business!

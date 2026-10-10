@@ -1,0 +1,35 @@
+# Python 3.12, CPU only. Verified together on 2026-10-06 (`pip check` clean).
+#
+# Install PaddlePaddle FIRST, from the official Paddle CPU index (not PyPI):
+#   python -m pip install paddlepaddle==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+# Then:
+#   python -m pip install -r requirements.txt
+
+# --- OCR ---
+# paddlepaddle==3.2.0   (installed separately, see above)
+paddleocr==3.7.0
+# Paddle 3.x imports setuptools; Python 3.12 venvs no longer include it.
+setuptools
+
+# --- AI processing ---
+# dspy 3.4.0 breaks `import dspy` before `import fastapi` (lazy anyio proxy -> circular import).
+dspy==3.3.1
+# paddlex 3.7.2 pins PyYAML==6.0.2; litellm >=1.104 requires PyYAML>=6.0.3.
+litellm==1.103.3
+PyYAML==6.0.2
+
+# --- Web ---
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
+
+# --- Utilities ---
+python-dotenv==1.2.4
+Pillow==12.1.0
+numpy==2.3.5
+
+# --- Tests ---
+pytest==9.1.1
+httpx==0.28.1
+# Browser check (scripts/ui_check.py); also installed by uvicorn[standard]
+websockets==17.2

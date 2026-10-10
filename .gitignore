@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Secrets / local settings
+.env
+
+# Generated output (keep the folder)
+outputs/*
+!outputs/.gitkeep
+
+# Logs / editors
+*.log
+.vscode/
+.idea/

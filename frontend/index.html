@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OCR Extractor</title>
+  <meta name="description" content="Upload an invoice, receipt, or document image and extract the fields you need.">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      <h1>OCR Extractor</h1>
+      <p class="lead">Upload an invoice, receipt, or document image and extract the fields you need.</p>
+      <p id="service-status" class="service-status" role="status" aria-live="polite">Checking the OCR service…</p>
+    </div>
+  </header>
+
+  <main class="container layout">
+    <!-- Left column: inputs -->
+    <div class="column">
+      <section class="card" aria-labelledby="upload-heading">
+        <h2 id="upload-heading">1. Image</h2>
+
+        <div id="drop-zone" class="drop-zone">
+          <input id="file-input" class="visually-hidden" type="file"
+                 accept=".jpg,.jpeg,.png,.bmp,.webp,image/jpeg,image/png,image/bmp,image/webp"
+                 aria-describedby="file-help">
+          <label for="file-input" class="drop-label">
+            <span class="drop-icon" aria-hidden="true">⬆</span>
+            <span><strong>Choose an image</strong> or drag and drop it here</span>
+          </label>
+          <p id="file-help" class="help">JPG, PNG, BMP or WEBP · up to 10 MB</p>
+        </div>
+        <p id="file-error" class="inline-error" role="alert" hidden></p>
+
+        <div id="preview" class="preview" hidden>
+          <div class="file-meta">
+            <div>
+              <p id="file-name" class="file-name"></p>
+              <p id="file-size" class="help"></p>
+            </div>
+            <button id="remove-file" type="button" class="btn btn-secondary">Remove image</button>
+          </div>
+          <div id="image-wrap" class="image-wrap">
+            <img id="preview-img" alt="Preview of the selected image">
+            <canvas id="box-canvas" class="box-canvas" aria-hidden="true"></canvas>
+          </div>
+          <label id="boxes-toggle-wrap" class="checkbox-inline" hidden>
+            <input id="boxes-toggle" type="checkbox" checked>
+            Show OCR bounding boxes on the image
+          </label>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="fields-heading">
+        <h2 id="fields-heading">2. Fields to extract</h2>
+
+        <fieldset class="fieldset">
+          <legend>Predefined fields</legend>
+          <div class="field-actions">
+            <button id="select-all" type="button" class="btn-link">Select all</button>
+            <button id="clear-all" type="button" class="btn-link">Clear all</button>
+          </div>
+          <div id="predefined-list" class="checkbox-grid">
+            <p class="help">Loading fields…</p>
+          </div>
+          <p id="fields-error" class="inline-error" role="alert" hidden></p>
+        </fieldset>
+
+        <div class="custom-field">
+          <label for="custom-input">Custom field</label>
+          <div class="custom-row">
+            <input id="custom-input" type="text" maxlength="60" placeholder="e.g. Vendor Address"
+                   aria-describedby="custom-help custom-message">
+            <button id="custom-add" type="button" class="btn btn-secondary">Add field</button>
+          </div>
+          <p id="custom-help" class="help">Letters, digits and spaces, starting with a letter.</p>
+          <p id="custom-message" class="inline-message" aria-live="polite"></p>
+          <ul id="custom-list" class="custom-list" aria-label="Custom fields"></ul>
+        </div>
+
+        <p id="selected-count" class="selected-count" aria-live="polite">Selected fields: 0</p>
+      </section>
+
+      <section class="card action-card">
+        <button id="extract-btn" type="button" class="btn btn-primary" disabled aria-describedby="extract-hint">
+          Extract Selected Fields
+        </button>
+        <p id="extract-hint" class="help">Choose an image and at least one field.</p>
+      </section>
+    </div>
+
+    <!-- Right column: status and results -->
+    <div class="column">
+      <section id="loading" class="card loading" role="status" aria-live="polite" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <div>
+          <p class="loading-title">Processing image…</p>
+          <p class="help">OCR is running and AI extraction may take up to a few minutes.</p>
+          <p class="help">Elapsed: <span id="elapsed">0</span> s</p>
+        </div>
+      </section>
+
+      <div id="banner" class="banner" hidden>
+        <p id="banner-title" class="banner-title"></p>
+        <p id="banner-text"></p>
+      </div>
+
+      <section id="results" class="card" aria-labelledby="results-heading" hidden>
+        <div class="results-head">
+          <h2 id="results-heading">Extracted fields</h2>
+          <button id="copy-json" type="button" class="btn btn-secondary btn-small">Copy as JSON</button>
+        </div>
+        <dl id="results-list" class="results-list"></dl>
+        <p id="results-note" class="help"></p>
+      </section>
+
+      <section id="ocr-section" class="card" aria-labelledby="ocr-heading" hidden>
+        <h2 id="ocr-heading">OCR details</h2>
+        <ul id="ocr-summary" class="summary"></ul>
+        <ul id="warnings" class="warnings" aria-label="Warnings"></ul>
+
+        <details>
+          <summary>Raw OCR text</summary>
+          <pre id="raw-text" class="ocr-text" tabindex="0"></pre>
+        </details>
+        <details>
+          <summary>Text sent to the AI (grouped into rows)</summary>
+          <pre id="reading-text" class="ocr-text" tabindex="0"></pre>
+        </details>
+        <details>
+          <summary>Detected lines, confidence and bounding boxes</summary>
+          <div class="table-wrap" tabindex="0">
+            <table class="lines-table">
+              <caption class="visually-hidden">OCR lines with confidence and bounding box in original image pixels</caption>
+              <thead>
+                <tr><th scope="col">#</th><th scope="col">Text</th><th scope="col">Confidence</th><th scope="col">Box [x1, y1, x2, y2]</th></tr>
+              </thead>
+              <tbody id="lines-body"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </div>
+  </main>
+
+  <footer class="container footer">
+    <p class="help">Runs locally: PaddleOCR for text recognition, DSPy + Ollama for field extraction.</p>
+  </footer>
+</body>
+</html>
